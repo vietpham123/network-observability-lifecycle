@@ -106,6 +106,16 @@
         },
         "querySettings": {}
       },
+      "all_controls": {
+        "type": "data",
+        "title": "All controls — every device × requirement (✓/✗, scales to any control count)",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | expand ctrl = compliance.controls | parse ctrl, \"JSON:c\" | fieldsAdd device = device.name, iso = c[iso_control], control = c[title], check = if(c[result] == \"PASS\", \"✓ PASS\", else: \"✗ FAIL\") | fields device, net_role, net_site, iso, control, check | sort net_role asc, device asc, iso asc",
+        "visualization": "table",
+        "visualizationSettings": {
+          "table": { "rowDensity": "condensed", "columnWidthStrategy": "auto", "linewrapEnabled": false }
+        },
+        "querySettings": {}
+      },
       "by_role": {
         "type": "data",
         "title": "Control failures by role",
@@ -147,12 +157,13 @@
       "kpi_failures": { "x": 18, "y": 2, "w": 6, "h": 4 },
       "control_pivot": { "x": 0, "y": 6, "w": 24, "h": 9 },
       "control_matrix": { "x": 0, "y": 15, "w": 24, "h": 9 },
-      "status_table": { "x": 0, "y": 24, "w": 14, "h": 10 },
-      "iso_violations": { "x": 14, "y": 24, "w": 10, "h": 10 },
-      "by_role": { "x": 0, "y": 34, "w": 8, "h": 8 },
-      "by_site": { "x": 8, "y": 34, "w": 8, "h": 8 },
-      "drift_trend": { "x": 16, "y": 34, "w": 8, "h": 8 },
-      "activity": { "x": 0, "y": 42, "w": 24, "h": 10 }
+      "all_controls": { "x": 0, "y": 24, "w": 24, "h": 14 },
+      "status_table": { "x": 0, "y": 38, "w": 14, "h": 10 },
+      "iso_violations": { "x": 14, "y": 38, "w": 10, "h": 10 },
+      "by_role": { "x": 0, "y": 48, "w": 8, "h": 8 },
+      "by_site": { "x": 8, "y": 48, "w": 8, "h": 8 },
+      "drift_trend": { "x": 16, "y": 48, "w": 8, "h": 8 },
+      "activity": { "x": 0, "y": 56, "w": 24, "h": 10 }
     }
   }
 }

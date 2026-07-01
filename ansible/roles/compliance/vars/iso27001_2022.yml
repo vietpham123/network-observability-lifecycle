@@ -1,32 +1,107 @@
 ---
-# Illustrative control catalog. Each check maps a device-config assertion to an
-# ISO/IEC 27001:2022 Annex A control so the shipped result carries audit context.
+# Device-relevant ISO/IEC 27001:2022 Annex A control catalog. Each entry maps a
+# device-config assertion to an Annex A control so shipped evidence carries audit
+# context. This is the subset of the 93 Annex A controls that a network device's
+# running-config can actually *prove* (mostly A.8 Technological + a few A.5).
+# Roles evaluate a subset via compliance_controls in their group_vars.
 iso27001_2022:
+
+  # ── Management-plane hardening (A.8.20 Networks security) ──────────────────
   no_telnet:
     control: "A.8.20"
-    title: "Networks security — management-plane hardening"
-    assert: "telnet transport disabled"
-  ssh_v2_only:
-    control: "A.8.5"
-    title: "Secure authentication"
-    assert: "SSHv2 enforced, SSHv1 disabled"
-  snmp_not_default_community:
-    control: "A.8.9"
-    title: "Configuration management"
-    assert: "no default/public SNMP community; SNMPv3 auth+priv"
-  logging_host_set:
-    control: "A.8.15"
-    title: "Logging"
-    assert: "syslog forwarded to collector"
-  ntp_configured:
-    control: "A.8.17"
-    title: "Clock synchronization"
-    assert: "authoritative NTP source set"
-  bgp_md5_auth:
-    control: "A.8.24"
-    title: "Use of cryptography"
-    assert: "BGP session authentication enabled"
+    title: "Networks security — telnet disabled"
+    assert: "telnet transport disabled on VTY lines"
+  vty_access_class:
+    control: "A.8.20"
+    title: "Networks security — management-plane ACL"
+    assert: "VTY access-class restricts management sources"
+  no_http_server:
+    control: "A.8.20"
+    title: "Networks security — HTTP server disabled"
+    assert: "insecure HTTP admin server disabled"
+  port_security:
+    control: "A.8.20"
+    title: "Networks security — access-port security"
+    assert: "switchport port-security enabled on access ports"
+
+  # ── Segregation of networks (A.8.22) ──────────────────────────────────────
   default_deny_ruleset:
     control: "A.8.22"
-    title: "Segregation of networks"
-    assert: "implicit default-deny present"
+    title: "Segregation of networks — default-deny"
+    assert: "implicit default-deny present on edge ACL"
+  no_source_route:
+    control: "A.8.22"
+    title: "Segregation of networks — source routing disabled"
+    assert: "IP source-routing disabled"
+
+  # ── Secure authentication & privileged access (A.8.5 / A.8.2) ─────────────
+  ssh_v2_only:
+    control: "A.8.5"
+    title: "Secure authentication — SSHv2 only"
+    assert: "SSHv2 enforced, SSHv1 disabled"
+  enable_secret:
+    control: "A.8.5"
+    title: "Secure authentication — privileged secret set"
+    assert: "enable secret (hashed) configured, not enable password"
+  aaa_enabled:
+    control: "A.8.2"
+    title: "Privileged access rights — centralized AAA"
+    assert: "aaa new-model enabled"
+  exec_timeout:
+    control: "A.8.2"
+    title: "Privileged access rights — idle session timeout"
+    assert: "VTY exec-timeout configured"
+
+  # ── Access control (A.5.15) ───────────────────────────────────────────────
+  login_banner:
+    control: "A.5.15"
+    title: "Access control — authorized-use banner"
+    assert: "legal login banner present"
+
+  # ── Use of cryptography (A.8.24) ──────────────────────────────────────────
+  password_encryption:
+    control: "A.8.24"
+    title: "Use of cryptography — stored password encryption"
+    assert: "service password-encryption enabled"
+  bgp_md5_auth:
+    control: "A.8.24"
+    title: "Use of cryptography — routing authentication"
+    assert: "BGP neighbor authentication enabled"
+  ntp_auth:
+    control: "A.8.24"
+    title: "Use of cryptography — NTP authentication"
+    assert: "authenticated NTP configured"
+
+  # ── Configuration management (A.8.9) ──────────────────────────────────────
+  snmp_not_default_community:
+    control: "A.8.9"
+    title: "Configuration management — SNMPv3 only"
+    assert: "no default/public community; SNMPv3 auth+priv"
+
+  # ── Information backup (A.8.13) ───────────────────────────────────────────
+  config_archive:
+    control: "A.8.13"
+    title: "Information backup — configuration archive"
+    assert: "config archive/backup configured"
+
+  # ── Logging & monitoring (A.8.15 / A.8.16) ────────────────────────────────
+  logging_host_set:
+    control: "A.8.15"
+    title: "Logging — syslog forwarding"
+    assert: "syslog forwarded to collector"
+  logging_trap_severity:
+    control: "A.8.16"
+    title: "Monitoring activities — syslog severity"
+    assert: "logging trap severity configured"
+
+  # ── Clock synchronization (A.8.17) ────────────────────────────────────────
+  ntp_configured:
+    control: "A.8.17"
+    title: "Clock synchronization — NTP source"
+    assert: "authoritative NTP source set"
+
+  # ── Web filtering (A.8.23) — firewalls ────────────────────────────────────
+  web_filtering:
+    control: "A.8.23"
+    title: "Web filtering — content inspection"
+    assert: "content/URL inspection policy present"

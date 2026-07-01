@@ -9,8 +9,19 @@ snmp:
   profile: firewall_generic
 compliance_controls:
   - no_telnet
+  - vty_access_class
+  - no_http_server
+  - no_source_route
   - ssh_v2_only
+  - enable_secret
+  - aaa_enabled
+  - exec_timeout
+  - login_banner
+  - password_encryption
   - snmp_not_default_community
+  - config_archive
   - logging_host_set
+  - logging_trap_severity
   - ntp_configured
-  - default_deny_ruleset  # role-specific control
+  - default_deny_ruleset  # firewall-specific: default-deny edge ACL
+  - web_filtering         # firewall-specific: content inspection

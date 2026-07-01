@@ -9,8 +9,19 @@ snmp:
   profile: cisco_router
 compliance_controls:
   - no_telnet
+  - vty_access_class
+  - no_http_server
+  - no_source_route
   - ssh_v2_only
+  - enable_secret
+  - aaa_enabled
+  - exec_timeout
+  - login_banner
+  - password_encryption
   - snmp_not_default_community
+  - config_archive
   - logging_host_set
+  - logging_trap_severity
   - ntp_configured
-  - bgp_md5_auth        # role-specific control
+  - bgp_md5_auth        # router-specific: routing authentication
+  - ntp_auth            # router-specific: authenticated NTP

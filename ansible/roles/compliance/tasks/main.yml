@@ -25,13 +25,36 @@
   loop: "{{ compliance_controls }}"
   vars:
     probe_map:
-      no_telnet: "{{ 'no ip telnet' in running_config }}"
-      ssh_v2_only: "{{ 'ip ssh version 2' in running_config }}"
-      snmp_not_default_community: "{{ 'v3 priv' in running_config }}"
-      logging_host_set: "{{ 'logging host' in running_config }}"
-      ntp_configured: "{{ 'ntp server' in running_config }}"
-      bgp_md5_auth: "{{ 'neighbor' in running_config and 'password' in running_config }}"
+      # management-plane hardening
+      no_telnet: "{{ 'transport input ssh' in running_config and 'transport input telnet' not in running_config }}"
+      vty_access_class: "{{ 'access-class' in running_config }}"
+      no_http_server: "{{ 'no ip http server' in running_config }}"
+      port_security: "{{ 'switchport port-security' in running_config }}"
+      # segregation of networks
       default_deny_ruleset: "{{ 'deny ip any any' in running_config }}"
+      no_source_route: "{{ 'no ip source-route' in running_config }}"
+      # secure authentication & privileged access
+      ssh_v2_only: "{{ 'ip ssh version 2' in running_config }}"
+      enable_secret: "{{ 'enable secret' in running_config }}"
+      aaa_enabled: "{{ 'aaa new-model' in running_config }}"
+      exec_timeout: "{{ 'exec-timeout' in running_config }}"
+      # access control
+      login_banner: "{{ 'banner login' in running_config or 'banner motd' in running_config }}"
+      # use of cryptography
+      password_encryption: "{{ 'service password-encryption' in running_config }}"
+      bgp_md5_auth: "{{ 'neighbor' in running_config and 'password' in running_config }}"
+      ntp_auth: "{{ 'ntp authenticate' in running_config }}"
+      # configuration management
+      snmp_not_default_community: "{{ 'v3 priv' in running_config and 'community public' not in running_config }}"
+      # information backup
+      config_archive: "{{ 'archive' in running_config }}"
+      # logging & monitoring
+      logging_host_set: "{{ 'logging host' in running_config }}"
+      logging_trap_severity: "{{ 'logging trap' in running_config }}"
+      # clock synchronization
+      ntp_configured: "{{ 'ntp server' in running_config }}"
+      # web filtering (firewalls)
+      web_filtering: "{{ 'class-map type inspect' in running_config or 'url-filter' in running_config }}"
 
 - name: Render structured compliance result
   ansible.builtin.template:

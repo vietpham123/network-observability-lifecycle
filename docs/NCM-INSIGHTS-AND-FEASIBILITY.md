@@ -99,6 +99,7 @@ A single **Network NCM & Compliance** dashboard, deployed as code, gives a Solar
 | Devices evaluated · Compliance % · Devices in drift · Open control failures | Compliance summary KPIs |
 | **Compliance matrix — controls per device (✓/✗)** | The per-requirement **crosstab**: devices as rows, controls as columns, a check or cross in every cell |
 | **Compliance heatmap — device × ISO control (green/red)** | The at-a-glance "scan for red" grid |
+| **All controls — every device × requirement (✓/✗)** | The exhaustive checklist; fully dynamic, scales to any control count |
 | Current compliance status by device | Device policy report |
 | ISO 27001 control violations | Policy-violation breakdown |
 | Control failures by role / by site | Grouped posture |
@@ -144,11 +145,14 @@ Why a cautious network team can trust this:
 - Terraform deployed the Dynatrace config — **6 objects applied and confirmed via API**: 3 role
   auto-tags, the management zone, the tag-scoped compliance-drift alert, the log-processing rule.
   (`terraform plan/apply` clean; objects queried back.)
-- The compliance sweep ran against a 3-switch fleet, shipped structured evidence, and it was **read
-  back via DQL**: `core-sw-05` correctly showed **3 control failures** (A.8.20 telnet, A.8.9 SNMP,
-  A.8.17 NTP); the other two clean; **66.7% fleet compliance**.
-- The NCM dashboard — including the per-control **crosstab** and **heatmap** — deployed as code and
-  **rendered that live data** (12/12 tiles validated).
+- The compliance sweep ran against a **6-device fleet across 3 roles** (switches, routers, firewall)
+  evaluating **20 device-relevant controls / 12 ISO Annex A references**, shipped structured
+  evidence, and it was **read back via DQL**: **3 devices compliant, 3 in drift, 9 control failures
+  total** — e.g. `core-sw-05` failing telnet/SNMP/NTP/port-security/banner. Every result reproduced
+  on the dashboard.
+- The NCM dashboard — including the per-control **crosstab**, the **heatmap**, and a fully-dynamic
+  **all-controls table** (every device × requirement, scales to any control count) — deployed as
+  code and **rendered that live data** (13/13 tiles validated).
 
 **Honest prerequisites / caveats (so there are no surprises):**
 
