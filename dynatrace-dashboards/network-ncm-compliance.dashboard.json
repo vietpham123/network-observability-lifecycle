@@ -1,4 +1,5 @@
 {
+  "id": "b2690e7b-5b05-4512-8397-53b0ea325183",
   "name": "Network NCM & Compliance (as-code)",
   "type": "dashboard",
   "content": {
@@ -74,6 +75,37 @@
         "visualizationSettings": {},
         "querySettings": {}
       },
+      "control_pivot": {
+        "type": "data",
+        "title": "Compliance matrix — controls per device (✓ pass / ✗ fail)",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | expand ctrl = compliance.controls | parse ctrl, \"JSON:c\" | fieldsAdd ck = c[control_key], res = if(c[result] == \"PASS\", \"✓\", else: \"✗\") | summarize `A.8.20 no-telnet` = takeMax(if(ck == \"no_telnet\", res)), `A.8.5 ssh-v2` = takeMax(if(ck == \"ssh_v2_only\", res)), `A.8.9 snmp-secure` = takeMax(if(ck == \"snmp_not_default_community\", res)), `A.8.15 logging` = takeMax(if(ck == \"logging_host_set\", res)), `A.8.17 ntp` = takeMax(if(ck == \"ntp_configured\", res)), `A.8.24 bgp-md5` = takeMax(if(ck == \"bgp_md5_auth\", res)), `A.8.22 default-deny` = takeMax(if(ck == \"default_deny_ruleset\", res)), by: {device = device.name, net_role, net_site} | sort net_role asc, device asc",
+        "visualization": "table",
+        "visualizationSettings": {
+          "table": { "rowDensity": "condensed", "columnWidthStrategy": "auto", "linewrapEnabled": false }
+        },
+        "querySettings": {}
+      },
+      "control_matrix": {
+        "type": "data",
+        "title": "Compliance heatmap — device × ISO control (green pass / red fail)",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | expand ctrl = compliance.controls | parse ctrl, \"JSON:c\" | fieldsAdd status = if(c[result] == \"PASS\", 1, else: 0) | summarize compliant = max(status), by: {device = device.name, control = c[iso_control]}",
+        "visualization": "heatmap",
+        "visualizationSettings": {
+          "dataMapping": { "xAxis": "control", "yAxis": "device", "bucketValue": "compliant" },
+          "thresholds": [
+            {
+              "id": "hm1",
+              "field": "compliant",
+              "rules": [
+                { "id": "hr1", "color": "var(--dt-colors-charts-status-critical-default, #c4004b)", "value": 0 },
+                { "id": "hr2", "color": "var(--dt-colors-charts-status-ideal-default, #2f6863)", "value": 1 }
+              ],
+              "isEnabled": true
+            }
+          ]
+        },
+        "querySettings": {}
+      },
       "by_role": {
         "type": "data",
         "title": "Control failures by role",
@@ -113,12 +145,14 @@
       "kpi_compliance_pct": { "x": 6, "y": 2, "w": 6, "h": 4 },
       "kpi_drift": { "x": 12, "y": 2, "w": 6, "h": 4 },
       "kpi_failures": { "x": 18, "y": 2, "w": 6, "h": 4 },
-      "status_table": { "x": 0, "y": 6, "w": 14, "h": 10 },
-      "iso_violations": { "x": 14, "y": 6, "w": 10, "h": 10 },
-      "by_role": { "x": 0, "y": 16, "w": 8, "h": 8 },
-      "by_site": { "x": 8, "y": 16, "w": 8, "h": 8 },
-      "drift_trend": { "x": 16, "y": 16, "w": 8, "h": 8 },
-      "activity": { "x": 0, "y": 24, "w": 24, "h": 10 }
+      "control_pivot": { "x": 0, "y": 6, "w": 24, "h": 9 },
+      "control_matrix": { "x": 0, "y": 15, "w": 24, "h": 9 },
+      "status_table": { "x": 0, "y": 24, "w": 14, "h": 10 },
+      "iso_violations": { "x": 14, "y": 24, "w": 10, "h": 10 },
+      "by_role": { "x": 0, "y": 34, "w": 8, "h": 8 },
+      "by_site": { "x": 8, "y": 34, "w": 8, "h": 8 },
+      "drift_trend": { "x": 16, "y": 34, "w": 8, "h": 8 },
+      "activity": { "x": 0, "y": 42, "w": 24, "h": 10 }
     }
   }
 }
