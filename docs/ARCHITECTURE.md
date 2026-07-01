@@ -33,3 +33,26 @@ Two layers, one orchestrator.
 **Why tags, not entity IDs:** an entity ID/hostname/serial changes on every refresh or RMA. A
 role/site/class tag does not. Bind observability to the stable thing and hardware churn stops
 breaking your monitoring.
+
+## The entity / extension plane (what creates the device entities)
+
+The two planes above are the *config* plane (CaC) and the *evidence* plane (compliance logs). There
+is a third, which turns a device into a monitored **entity** — interfaces, throughput, errors,
+CPU/mem, up/down:
+
+```
+      ┌──────────────────────────────┐        polls SNMP (v2c/v3)
+      │ ActiveGate (group)           │  ───────────────────────────►  network devices (mgmt IPs)
+      │  SNMP EF2.0 extensions:      │
+      │   • snmp-generic-device      │  creates CUSTOM_DEVICE entities
+      │   • snmp-auto-discovery      │  + interface / health metrics
+      │   • cisco-* / palo-alto-*    │        │
+      └──────────────────────────────┘        ▼
+                                     entities self-tag (role/site/class) → alerts/zones/dashboards bind
+```
+
+This plane is **also as-code** (`dynatrace-terraform/network_extensions.tf`): the extension **version**
+is pinned (`dynatrace_hub_extension_active_version` — upgrades are one-line PRs) and a **monitoring
+configuration per role** (`dynatrace_hub_extension_v2_config`) targets that role's devices from an
+ActiveGate group. It is gated off by default because it needs an ActiveGate with SNMP reachability.
+The compliance/NCM plane does **not** depend on it; tag-scoped *alerting* does.

@@ -38,3 +38,62 @@ variable "dt_platform_token" {
   default     = ""
   sensitive   = true
 }
+
+# ── Entity/topology plane: SNMP extension monitoring (see network_extensions.tf) ──
+# Off by default: requires an ActiveGate in the target group + SNMP reachability.
+variable "enable_snmp_monitoring" {
+  description = "Deploy the SNMP generic-device extension monitoring configs (requires ActiveGate)."
+  type        = bool
+  default     = false
+}
+
+variable "snmp_extension_version" {
+  description = "Pinned version of com.dynatrace.extension.snmp-generic-device."
+  type        = string
+  default     = "2.2.10"
+}
+
+variable "snmp_feature_sets" {
+  description = "Extension feature sets to enable."
+  type        = list(string)
+  default     = ["Interfaces 64-bit", "Traffic", "neighbor-discovery"]
+}
+
+variable "snmp_activegate_group" {
+  description = "ActiveGate group scope for the monitoring config, e.g. ag_group-network-observability."
+  type        = string
+  default     = "ag_group-network-observability"
+}
+
+variable "snmp_targets" {
+  description = "Per-role device management IPs to poll. Mirrors ansible/inventory/hosts.yml."
+  type        = map(list(string))
+  default = {
+    core_switch = ["10.0.1.11", "10.0.1.12", "10.0.1.15"]
+    edge_router = ["10.0.2.11", "10.0.2.12"]
+    firewall    = ["10.0.3.11"]
+  }
+}
+
+variable "snmp_v3_user" {
+  type    = string
+  default = "netobs"
+}
+variable "snmp_v3_auth_method" {
+  type    = string
+  default = "SHA"
+}
+variable "snmp_v3_auth_password" {
+  type      = string
+  default   = ""
+  sensitive = true
+}
+variable "snmp_v3_priv_method" {
+  type    = string
+  default = "AES"
+}
+variable "snmp_v3_priv_password" {
+  type      = string
+  default   = ""
+  sensitive = true
+}

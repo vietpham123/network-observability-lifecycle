@@ -181,9 +181,9 @@ virtual) devices instead of fixtures.
 
 - **Two planes, two prerequisites.** The *evidence + reporting* plane (compliance logs → dashboard)
   works today off log data alone. The *tag-based alerting/zone* plane binds to Dynatrace **device
-  entities**, which requires the devices to be monitored as entities (SNMP/extension or custom-device
-  ingest). Standing up that monitoring is the one additional Day-0 step to light up tag-scoped
-  alerts and zones; it does not affect the NCM report.
+  entities**, which come from **SNMP extension monitoring** (see below). That monitoring is now
+  **also as-code** (`dynatrace-terraform/network_extensions.tf`) but is gated off by default because
+  it needs an ActiveGate; it does not affect the NCM report.
 - **Change events need an entity to attach to.** Events posted with an `entitySelector` that matches
   no monitored entity are dropped by design. Same fix as above: have the devices present as entities
   (or route change history as log/bizevents if entity-less change history is preferred).
@@ -193,6 +193,35 @@ virtual) devices instead of fixtures.
 - **The device-config templates are illustrative.** The compliance probes and baseline templates
   ship as a working shape (string-match probes over a device config); wiring them to real
   `ios_facts` / `nxos_facts` for your fleet is the expected adoption step.
+
+### Entity monitoring & extensions — also as-code (including updates)
+
+The SNMP extensions are what create the device **entities** and collect live health (interfaces,
+throughput, errors, CPU/mem, up/down). They run on an **ActiveGate** polling each device's mgmt IP.
+The target tenant already has the relevant ones installed — `snmp-generic-device`,
+`snmp-auto-discovery`, `snmp-traps-generic`, plus vendor extensions `cisco-sdwan` and
+`palo-alto-generic`. Crucially, **both the extension version and its monitoring configuration are
+managed as code**, in the same repo and the same reconcile loop as everything else
+(`dynatrace-terraform/network_extensions.tf`):
+
+- **Version (the "updating" story).** `dynatrace_hub_extension_active_version` pins the extension
+  version (e.g. `snmp-generic-device` `2.2.10`). Upgrading is a **one-line change + `terraform
+  apply`** — reviewed in a PR, diffable, revertible — not a silent console click. The same applies
+  to every other extension in the estate.
+- **Config.** `dynatrace_hub_extension_v2_config` declares **one monitoring configuration per role**,
+  scoped to an ActiveGate group, targeting that role's device IPs — the identical role contract used
+  by the tags, zones, and alerts. Add a role or a device and its monitoring extends by the same
+  one-line pattern.
+- **Drift & updates stay governed.** Because these are Terraform resources, an out-of-band change to
+  an extension version or monitoring config is caught by the same `plan`/CI diff that guards the rest
+  of the platform config — so the entity plane doesn't quietly rot.
+
+**Verification status:** validated to `terraform plan` against the live tenant — **4 resources plan
+cleanly** (1 version pin + 3 per-role monitoring configs) against the actually-installed extension.
+**Not applied**, because polling requires an ActiveGate with SNMP reachability + credentials; the
+block is gated behind `enable_snmp_monitoring = false` until that infra exists. This is the one part
+of the stack that needs environment infrastructure to fully light up — but it is *authored and
+version-controlled as code today*, not left as a manual console task.
 
 ---
 
