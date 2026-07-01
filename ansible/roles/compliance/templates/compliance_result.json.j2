@@ -1,5 +1,5 @@
 {
-  "timestamp": "{{ ansible_date_time.iso8601 | default('%Y-%m-%dT%H:%M:%SZ' | strftime) }}",
+  "timestamp": "{{ now(utc=True).strftime('%Y-%m-%dT%H:%M:%S.000Z') }}",
   "log.source": "ansible-compliance",
   "content": "compliance {{ compliance_phase | default('audit') }} for {{ inventory_hostname }}",
   "device.name": "{{ inventory_hostname }}",

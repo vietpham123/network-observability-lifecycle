@@ -1,0 +1,124 @@
+{
+  "name": "Network NCM & Compliance (as-code)",
+  "type": "dashboard",
+  "content": {
+    "version": 21,
+    "variables": [],
+    "tiles": {
+      "header": {
+        "type": "markdown",
+        "content": "# Network NCM & Compliance\nConfiguration-compliance posture for the managed network estate — evaluated by Ansible against the **ISO/IEC 27001:2022** baseline and shipped to Dynatrace as structured evidence. Tiles group by **role / site / control**, never by device serial, so nothing orphans on a hardware swap. Source: `log.source == \"ansible-compliance\"`."
+      },
+      "kpi_devices": {
+        "type": "data",
+        "title": "Devices evaluated",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | summarize devices = count() | fields devices",
+        "visualization": "singleValue",
+        "visualizationSettings": {},
+        "querySettings": {}
+      },
+      "kpi_compliance_pct": {
+        "type": "data",
+        "title": "Compliance %",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | summarize compliant = countIf(toLong(compliance.failed_count) == 0), total = count() | fieldsAdd compliancePercent = round(100.0 * compliant / total, decimals: 1) | fields compliancePercent",
+        "visualization": "singleValue",
+        "visualizationSettings": {
+          "singleValue": {
+            "showTrend": false,
+            "showSparkline": false
+          },
+          "thresholds": [
+            {
+              "id": "t1",
+              "field": "compliancePercent",
+              "rules": [
+                { "id": "r1", "color": "var(--dt-colors-charts-status-critical-default, #c4004b)", "value": 0 },
+                { "id": "r2", "color": "var(--dt-colors-charts-status-warning-default, #ec7a08)", "value": 80 },
+                { "id": "r3", "color": "var(--dt-colors-charts-status-ideal-default, #2f6863)", "value": 95 }
+              ],
+              "isEnabled": true
+            }
+          ]
+        },
+        "querySettings": {}
+      },
+      "kpi_drift": {
+        "type": "data",
+        "title": "Devices in drift",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | summarize inDrift = countIf(toLong(compliance.failed_count) > 0) | fields inDrift",
+        "visualization": "singleValue",
+        "visualizationSettings": {},
+        "querySettings": {}
+      },
+      "kpi_failures": {
+        "type": "data",
+        "title": "Open control failures",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | summarize controlFailures = sum(toLong(compliance.failed_count)) | fields controlFailures",
+        "visualization": "singleValue",
+        "visualizationSettings": {},
+        "querySettings": {}
+      },
+      "status_table": {
+        "type": "data",
+        "title": "Current compliance status by device",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | fieldsAdd status = if(toLong(compliance.failed_count) > 0, \"DRIFT\", else: \"COMPLIANT\") | fields device.name, net_role, net_site, net_class, device.serial, status, failed = toLong(compliance.failed_count), lastEvaluated = timestamp | sort failed desc",
+        "visualization": "table",
+        "visualizationSettings": {},
+        "querySettings": {}
+      },
+      "iso_violations": {
+        "type": "data",
+        "title": "ISO 27001 control violations (Annex A)",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | expand ctrl = compliance.controls | parse ctrl, \"JSON:c\" | fieldsAdd result = c[result], control = concat(c[iso_control], \" — \", c[title]) | filter result == \"FAIL\" | summarize violations = count(), by: {control} | sort violations desc",
+        "visualization": "categoricalBarChart",
+        "visualizationSettings": {},
+        "querySettings": {}
+      },
+      "by_role": {
+        "type": "data",
+        "title": "Control failures by role",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | summarize failed = sum(toLong(compliance.failed_count)), by: {net_role}",
+        "visualization": "donutChart",
+        "visualizationSettings": {},
+        "querySettings": {}
+      },
+      "by_site": {
+        "type": "data",
+        "title": "Control failures by site",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | summarize failed = sum(toLong(compliance.failed_count)), devices = count(), by: {net_site} | sort failed desc",
+        "visualization": "categoricalBarChart",
+        "visualizationSettings": {},
+        "querySettings": {}
+      },
+      "drift_trend": {
+        "type": "data",
+        "title": "Compliance drift over time",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | makeTimeseries controlFailures = sum(toLong(compliance.failed_count)), by: {net_role}",
+        "visualization": "lineChart",
+        "visualizationSettings": {},
+        "querySettings": {}
+      },
+      "activity": {
+        "type": "data",
+        "title": "Recent compliance evaluations (audit trail)",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | fieldsAdd status = if(toLong(compliance.failed_count) > 0, \"DRIFT\", else: \"COMPLIANT\") | fields timestamp, device.name, net_role, net_site, phase = compliance.phase, baseline = compliance.baseline, status, failed = toLong(compliance.failed_count) | sort timestamp desc | limit 50",
+        "visualization": "table",
+        "visualizationSettings": {},
+        "querySettings": {}
+      }
+    },
+    "layouts": {
+      "header": { "x": 0, "y": 0, "w": 24, "h": 2 },
+      "kpi_devices": { "x": 0, "y": 2, "w": 6, "h": 4 },
+      "kpi_compliance_pct": { "x": 6, "y": 2, "w": 6, "h": 4 },
+      "kpi_drift": { "x": 12, "y": 2, "w": 6, "h": 4 },
+      "kpi_failures": { "x": 18, "y": 2, "w": 6, "h": 4 },
+      "status_table": { "x": 0, "y": 6, "w": 14, "h": 10 },
+      "iso_violations": { "x": 14, "y": 6, "w": 10, "h": 10 },
+      "by_role": { "x": 0, "y": 16, "w": 8, "h": 8 },
+      "by_site": { "x": 8, "y": 16, "w": 8, "h": 8 },
+      "drift_trend": { "x": 16, "y": 16, "w": 8, "h": 8 },
+      "activity": { "x": 0, "y": 24, "w": 24, "h": 10 }
+    }
+  }
+}
