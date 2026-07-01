@@ -1,0 +1,7 @@
+{
+  "bucketName": "network_compliance",
+  "displayName": "Network Compliance Evidence",
+  "table": "logs",
+  "__comment": "Long retention for continuous ISO evidence across every lifecycle event. Grail storage is immutable; deletions are audited. Set retention to your audit requirement (example: 7y).",
+  "retentionDays": 2555
+}

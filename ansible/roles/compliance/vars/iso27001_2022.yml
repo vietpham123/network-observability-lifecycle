@@ -1,0 +1,32 @@
+---
+# Illustrative control catalog. Each check maps a device-config assertion to an
+# ISO/IEC 27001:2022 Annex A control so the shipped result carries audit context.
+iso27001_2022:
+  no_telnet:
+    control: "A.8.20"
+    title: "Networks security — management-plane hardening"
+    assert: "telnet transport disabled"
+  ssh_v2_only:
+    control: "A.8.5"
+    title: "Secure authentication"
+    assert: "SSHv2 enforced, SSHv1 disabled"
+  snmp_not_default_community:
+    control: "A.8.9"
+    title: "Configuration management"
+    assert: "no default/public SNMP community; SNMPv3 auth+priv"
+  logging_host_set:
+    control: "A.8.15"
+    title: "Logging"
+    assert: "syslog forwarded to collector"
+  ntp_configured:
+    control: "A.8.17"
+    title: "Clock synchronization"
+    assert: "authoritative NTP source set"
+  bgp_md5_auth:
+    control: "A.8.24"
+    title: "Use of cryptography"
+    assert: "BGP session authentication enabled"
+  default_deny_ruleset:
+    control: "A.8.22"
+    title: "Segregation of networks"
+    assert: "implicit default-deny present"

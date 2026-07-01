@@ -1,0 +1,16 @@
+{
+  "dashboardMetadata": { "name": "Network Compliance (as-code)", "shared": true },
+  "__comment": "Tiles run DQL over the compliance bucket, grouped by net_role/net_site. No device is named, so tiles never orphan on hardware change.",
+  "tiles": [
+    {
+      "name": "Pass/Fail by role",
+      "tileType": "DATA_EXPLORER",
+      "query": "fetch logs, from: -30d | filter log.source == \"ansible-compliance\" | summarize failed = sum(toLong(failed_count)), by: {net_role}"
+    },
+    {
+      "name": "Failed controls trend",
+      "tileType": "DATA_EXPLORER",
+      "query": "fetch logs, from: -90d | filter log.source == \"ansible-compliance\" | filter toLong(failed_count) > 0 | makeTimeseries count(), by: {net_role}"
+    }
+  ]
+}

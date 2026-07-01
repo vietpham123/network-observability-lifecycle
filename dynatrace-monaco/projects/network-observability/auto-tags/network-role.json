@@ -1,0 +1,17 @@
+{
+  "name": "net_role",
+  "rules": [
+    {
+      "type": "ME",
+      "enabled": true,
+      "valueFormat": "{Host:DetectedName/role}",
+      "__comment": "Derive net_role from metadata the device/SNMP extension carries (host group, host metadata, or the tag the change/compliance payloads already set). VERIFY the condition against how your network entities surface metadata.",
+      "conditions": [
+        {
+          "key": { "attribute": "HOST_GROUP_NAME" },
+          "comparisonInfo": { "type": "STRING", "operator": "EXISTS", "caseSensitive": false }
+        }
+      ]
+    }
+  ]
+}

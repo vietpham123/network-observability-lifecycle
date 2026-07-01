@@ -1,0 +1,16 @@
+net_role: edge_router
+net_class: router
+dynatrace_tags:
+  net_role: "edge_router"
+  net_class: "router"
+  managed_by: "ansible-caac"
+snmp:
+  version: v3
+  profile: cisco_router
+compliance_controls:
+  - no_telnet
+  - ssh_v2_only
+  - snmp_not_default_community
+  - logging_host_set
+  - ntp_configured
+  - bgp_md5_auth        # role-specific control

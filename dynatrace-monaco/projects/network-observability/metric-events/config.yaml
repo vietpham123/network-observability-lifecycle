@@ -1,0 +1,9 @@
+configs:
+  - id: compliance-drift-alert
+    type:
+      settings:
+        schema: builtin:anomaly-detection.metric-events   # VERIFY
+        scope: environment
+    config:
+      name: Network compliance drift
+      template: compliance-drift.json

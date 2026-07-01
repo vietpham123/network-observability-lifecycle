@@ -1,0 +1,27 @@
+---
+# DAY-3: decommission. Run this BEFORE deleting the host from inventory so the
+# retirement is recorded and the entity ages out of tag scope cleanly.
+- name: Retire / decommission a device
+  hosts: "{{ target | mandatory }}"
+  gather_facts: false
+  tasks:
+    - name: Final compliance snapshot (last evidence record)
+      ansible.builtin.include_role:
+        name: compliance
+      vars:
+        compliance_phase: decommission
+
+    - name: Wipe/neutralize device config
+      ansible.builtin.include_role:
+        name: device_config
+      vars:
+        device_config_mode: decommission
+
+    - name: Emit decommission event
+      ansible.builtin.include_role:
+        name: dynatrace_events
+      vars:
+        dt_event_type: "CUSTOM_DEPLOYMENT"
+        dt_event_title: "Decommissioned {{ inventory_hostname }}"
+    # After this completes: remove the host from inventory/hosts.yml and commit.
+    # No alert/dashboard edits needed — the entity simply stops matching the tag scope.

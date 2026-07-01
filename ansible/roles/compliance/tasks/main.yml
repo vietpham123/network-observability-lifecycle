@@ -1,0 +1,57 @@
+---
+# Runs the role's applicable controls against live device config, builds a
+# structured result, and ships it to Dynatrace as a log record (Log Ingest API
+# via the ActiveGate endpoint). Dynatrace parses it (see log-processing config)
+# into per-control pass/fail and retains it in the immutable compliance bucket.
+- name: Load ISO control catalog
+  ansible.builtin.include_vars:
+    file: "{{ compliance_baseline }}.yml"
+
+- name: Gather running config (placeholder — wire ios_facts/nxos_facts)
+  ansible.builtin.set_fact:
+    running_config: "{{ lookup('file', '/tmp/' ~ inventory_hostname ~ '.cfg', errors='ignore') | default('', true) }}"
+
+# --- Evaluate each applicable control. Real checks parse running_config;
+#     here we demonstrate the assert->result shape with simple string probes. ---
+- name: Evaluate controls
+  ansible.builtin.set_fact:
+    control_results: >-
+      {{ control_results | default([]) + [ {
+        'control_key': item,
+        'iso_control': (lookup('vars', compliance_baseline)[item].control),
+        'title': (lookup('vars', compliance_baseline)[item].title),
+        'result': ('PASS' if (probe_map[item] | default(false)) else 'FAIL')
+      } ] }}
+  loop: "{{ compliance_controls }}"
+  vars:
+    probe_map:
+      no_telnet: "{{ 'no ip telnet' in running_config }}"
+      ssh_v2_only: "{{ 'ip ssh version 2' in running_config }}"
+      snmp_not_default_community: "{{ 'v3 priv' in running_config }}"
+      logging_host_set: "{{ 'logging host' in running_config }}"
+      ntp_configured: "{{ 'ntp server' in running_config }}"
+      bgp_md5_auth: "{{ 'neighbor' in running_config and 'password' in running_config }}"
+      default_deny_ruleset: "{{ 'deny ip any any' in running_config }}"
+
+- name: Render structured compliance result
+  ansible.builtin.template:
+    src: compliance_result.json.j2
+    dest: "/tmp/{{ inventory_hostname }}.compliance.json"
+  delegate_to: localhost
+
+- name: Ship result to Dynatrace Log Ingest API (ActiveGate endpoint)
+  ansible.builtin.uri:
+    url: "{{ dynatrace.log_ingest_url | default(dynatrace.env_url ~ '/api/v2/logs/ingest') }}"
+    method: POST
+    headers:
+      Authorization: "Api-Token {{ lookup('env', 'DT_API_TOKEN') }}"
+      Content-Type: "application/json; charset=utf-8"
+    body_format: json
+    body: "{{ lookup('file', '/tmp/' ~ inventory_hostname ~ '.compliance.json') }}"
+    status_code: [200, 204]
+  delegate_to: localhost
+
+- name: Flag post-phase failures (drives rollback in device_update.yml)
+  when: compliance_phase | default('audit') == 'post'
+  ansible.builtin.set_fact:
+    compliance_post_failed: "{{ control_results | selectattr('result','equalto','FAIL') | list | length > 0 }}"

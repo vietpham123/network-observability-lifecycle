@@ -1,0 +1,14 @@
+{
+  "eventType": "{{ dt_event_type | default('CUSTOM_CONFIGURATION') }}",
+  "title": "{{ dt_event_title }}",
+  "entitySelector": "type(HOST),tag([{{ tag_schema.role_key | default('net_role') }}]{{ ':' }}{{ net_role }})",
+  "properties": {
+    "device.name": "{{ inventory_hostname }}",
+    "device.serial": "{{ mgmt_serial | default('unknown') }}",
+    "net_role": "{{ net_role }}",
+    "net_site": "{{ site }}",
+    "change.source": "ansible",
+    "ci.backlink": "{{ ci_backlink | default('n/a') }}",
+    "change.ticket": "{{ change_ticket | default('n/a') }}"
+  }
+}

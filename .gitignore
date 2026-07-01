@@ -1,0 +1,18 @@
+# secrets / state — never commit
+*.vault
+vault_pass*
+ansible/inventory/group_vars/all.yml
+**/terraform.tfvars
+**/*.tfstate
+**/*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+# monaco/ansible runtime
+.monaco/
+*.retry
+__pycache__/
+# generated compliance artifacts (shipped to Dynatrace, not stored in git)
+artifacts/
+
+# local claude settings
+.claude/settings.local.json

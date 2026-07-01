@@ -1,0 +1,9 @@
+---
+# Standalone compliance sweep across the fleet (also called inline by day-2 plays).
+- name: Fleet compliance sweep
+  hosts: "{{ target | default('all') }}"
+  gather_facts: false
+  roles:
+    - role: compliance
+      vars:
+        compliance_phase: audit

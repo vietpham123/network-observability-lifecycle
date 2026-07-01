@@ -1,0 +1,7 @@
+configs:
+  - id: network-compliance-dashboard
+    type:
+      api: dashboard        # classic dashboard API; VERIFY for Platform dashboards
+    config:
+      name: Network Compliance (as-code)
+      template: network-compliance.json

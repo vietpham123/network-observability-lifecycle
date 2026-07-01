@@ -1,0 +1,7 @@
+{
+  "ruleName": "ansible-compliance-parse",
+  "enabled": true,
+  "matcher": "log.source == \"ansible-compliance\"",
+  "__comment": "Promotes fields from the shipped JSON so DQL reports per-control pass/fail and failed_count. On OpenPipeline this becomes a DQL processor (PARSE / FIELDS_ADD). VERIFY syntax for your pipeline.",
+  "processorDefinition": "PARSE(content, \"JSON:payload\") | FIELDS_ADD(net_role: payload[net_role], compliance_phase: payload[compliance.phase], failed_count: payload[compliance.failed_count])"
+}

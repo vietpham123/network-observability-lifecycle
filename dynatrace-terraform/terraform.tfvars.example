@@ -1,0 +1,8 @@
+# Override defaults here if needed. Copy to terraform.tfvars (git-ignored).
+# device_roles = {
+#   core_switch = { net_class = "switch" }
+#   edge_router = { net_class = "router" }
+#   firewall    = { net_class = "firewall" }
+#   wan_optimizer = { net_class = "appliance" }   # <- adding a role is one line
+# }
+# compliance_retention_days = 3650

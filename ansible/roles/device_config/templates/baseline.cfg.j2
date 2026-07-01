@@ -1,0 +1,16 @@
+! Baseline for {{ inventory_hostname }} — role={{ net_role }} site={{ site }}
+! Rendered by Ansible; hand edits will be reverted on next run (desired-state).
+!
+no ip telnet
+ip ssh version 2
+!
+{% if 'snmp_not_default_community' in compliance_controls %}
+! SNMPv3 only; no public/private communities
+snmp-server group NETOBS v3 priv
+{% endif %}
+{% if 'logging_host_set' in compliance_controls %}
+logging host {{ dynatrace.activegate_syslog_host | default('10.0.0.250') }}
+{% endif %}
+{% if 'ntp_configured' in compliance_controls %}
+ntp server {{ ntp_server | default('10.0.0.123') }}
+{% endif %}

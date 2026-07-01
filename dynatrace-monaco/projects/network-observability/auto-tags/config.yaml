@@ -1,0 +1,9 @@
+configs:
+  - id: net-role-autotag
+    type:
+      settings:
+        schema: builtin:tags.auto-tagging   # VERIFY schema id/version for your tenant
+        scope: environment
+    config:
+      name: net_role
+      template: network-role.json

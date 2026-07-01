@@ -1,0 +1,19 @@
+{
+  "name": "Network Estate",
+  "rules": [
+    {
+      "type": "ME",
+      "enabled": true,
+      "conditions": [
+        {
+          "key": { "attribute": "HOST_TAGS" },
+          "comparisonInfo": {
+            "type": "TAG",
+            "operator": "EQUALS",
+            "value": { "context": "CONTEXTLESS", "key": "managed_by", "value": "ansible-caac" }
+          }
+        }
+      ]
+    }
+  ]
+}

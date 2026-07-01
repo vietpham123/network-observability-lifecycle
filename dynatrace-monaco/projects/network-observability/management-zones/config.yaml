@@ -1,0 +1,9 @@
+configs:
+  - id: network-mz
+    type:
+      settings:
+        schema: builtin:management-zones     # VERIFY
+        scope: environment
+    config:
+      name: Network Estate
+      template: network.json

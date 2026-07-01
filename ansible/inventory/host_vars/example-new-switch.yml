@@ -1,0 +1,13 @@
+# ---------------------------------------------------------------------------
+# EXAMPLE: everything needed to onboard ONE new switch without orphaning.
+# Copy the pattern; most devices need NOTHING here because the role group
+# (core_switches.yml) already supplies the monitoring profile + tags.
+#
+# You'd only add host_vars for genuine per-device exceptions.
+# ---------------------------------------------------------------------------
+# ansible_host: 10.0.1.16
+# site: chi-dc1
+# mgmt_serial: FOC1116
+# # optional per-device override — e.g. this box runs a newer OS with different OIDs:
+# snmp:
+#   profile: cisco_switch_9300

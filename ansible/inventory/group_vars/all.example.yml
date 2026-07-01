@@ -1,0 +1,23 @@
+# Copy to all.yml (git-ignored) and fill in. Never commit real tokens.
+# ---------------------------------------------------------------------------
+# Dynatrace tenant + the tag SCHEMA that ties devices to observability config.
+# ---------------------------------------------------------------------------
+dynatrace:
+  env_url: "https://{your-environment-id}.live.dynatrace.com"
+  # token pulled from env at runtime: export DT_API_TOKEN=dt0c01....
+  # scopes needed: events.ingest, settings.read, settings.write, entities.read
+  api_token: "{{ lookup('env', 'DT_API_TOKEN') }}"
+
+# The canonical tag keys. These same keys are referenced by:
+#   - the auto-tag rules in dynatrace-monaco / dynatrace-terraform
+#   - every metric-event alert scope
+#   - management zones, dashboards, retention bucket filters
+# Change them here ONLY if you change them there too. This is the contract.
+tag_schema:
+  role_key: "net_role"      # e.g. core_switch / edge_router / firewall
+  site_key: "net_site"      # e.g. chi-dc1
+  class_key: "net_class"    # e.g. switch / router / firewall
+  managed_by_key: "managed_by"   # constant value "ansible-caac" -> proves as-code ownership
+
+# ISO baseline set the compliance role evaluates against (see roles/compliance/vars)
+compliance_baseline: iso27001_2022

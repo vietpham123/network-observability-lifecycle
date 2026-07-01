@@ -1,0 +1,39 @@
+---
+# Reconciles the Dynatrace platform config by invoking the chosen CaC tool.
+# Ansible is only the orchestrator here — Monaco/Terraform own the Dynatrace state.
+#
+#   ansible-playbook playbooks/dynatrace_sync.yml -e caac_tool=monaco
+#   ansible-playbook playbooks/dynatrace_sync.yml -e caac_tool=terraform
+- name: Deploy Dynatrace configuration as code
+  hosts: localhost
+  gather_facts: false
+  vars:
+    caac_tool: monaco   # override with -e caac_tool=terraform
+    repo_root: "{{ playbook_dir }}/../.."
+  tasks:
+    - name: Fail early if token missing
+      ansible.builtin.assert:
+        that: "lookup('env', 'DT_API_TOKEN') | length > 0"
+        fail_msg: "DT_API_TOKEN is not set. export it before running."
+
+    - name: Deploy with Monaco
+      when: caac_tool == "monaco"
+      ansible.builtin.command:
+        cmd: >
+          monaco deploy manifest.yaml
+          --environment production
+        chdir: "{{ repo_root }}/dynatrace-monaco"
+      environment:
+        DT_API_TOKEN: "{{ lookup('env', 'DT_API_TOKEN') }}"
+      register: monaco_out
+      changed_when: "'Deployment finished' in monaco_out.stdout"
+
+    - name: Deploy with Terraform
+      when: caac_tool == "terraform"
+      community.general.terraform:   # VERIFY: collection installed (community.general)
+        project_path: "{{ repo_root }}/dynatrace-terraform"
+        state: present
+        force_init: true
+      environment:
+        DYNATRACE_ENV_URL: "{{ dynatrace.env_url }}"
+        DYNATRACE_API_TOKEN: "{{ lookup('env', 'DT_API_TOKEN') }}"

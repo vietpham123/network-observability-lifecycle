@@ -1,0 +1,11 @@
+configs:
+  - id: network-compliance-bucket
+    type:
+      settings:
+        # Grail buckets are managed via the bucket-definitions API. Monaco support
+        # depends on version; if unsupported, create via API in dynatrace_sync.yml.
+        schema: builtin:grail.buckets   # VERIFY - may require Bucket API instead
+        scope: environment
+    config:
+      name: network_compliance
+      template: network-compliance-bucket.json

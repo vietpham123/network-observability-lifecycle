@@ -1,0 +1,17 @@
+# Monaco 2.x deployment manifest.
+#   monaco deploy manifest.yaml --environment production
+# Token comes from env: DT_API_TOKEN (do not inline).
+manifestVersion: "1.0"
+projects:
+  - name: network-observability
+environmentGroups:
+  - name: prod
+    environments:
+      - name: production
+        url:
+          type: value
+          value: https://{your-environment-id}.live.dynatrace.com   # VERIFY
+        auth:
+          token:
+            type: environment
+            name: DT_API_TOKEN

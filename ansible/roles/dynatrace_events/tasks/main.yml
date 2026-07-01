@@ -1,0 +1,21 @@
+---
+# Pushes an event to Dynatrace via Events API v2, attached to the device's
+# entity BY TAG (attachRules), never by entity ID. That is what lets change
+# events land on the right timeline even after a hardware swap.
+- name: Render event payload
+  ansible.builtin.template:
+    src: change_event.json.j2
+    dest: "/tmp/{{ inventory_hostname }}.event.json"
+  delegate_to: localhost
+
+- name: POST event to Dynatrace
+  ansible.builtin.uri:
+    url: "{{ dynatrace.env_url }}/api/v2/events/ingest"
+    method: POST
+    headers:
+      Authorization: "Api-Token {{ lookup('env', 'DT_API_TOKEN') }}"   # scope: events.ingest
+      Content-Type: "application/json"
+    body_format: json
+    body: "{{ lookup('file', '/tmp/' ~ inventory_hostname ~ '.event.json') }}"
+    status_code: [201, 204]
+  delegate_to: localhost

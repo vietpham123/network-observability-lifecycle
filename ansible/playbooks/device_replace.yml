@@ -1,0 +1,34 @@
+---
+# DAY-3: RMA / failure swap. Same ROLE, new serial (often new mgmt IP).
+# The trick: because monitoring binds to role/site tags, the replacement rebinds
+# automatically once provisioned+tagged. We only need to (a) mute expected noise
+# during the window and (b) provision the new unit.
+- name: Replace a failed device without orphaning monitoring
+  hosts: "{{ target | mandatory }}"
+  gather_facts: false
+  tasks:
+    - name: Open maintenance window (suppress alerts for the OLD entity)
+      ansible.builtin.include_role:
+        name: dynatrace_events
+      vars:
+        dt_event_type: "MARKED_FOR_TERMINATION"   # planned-removal signal
+        dt_event_title: "RMA replacement in progress: {{ inventory_hostname }}"
+
+    - name: Provision the replacement to baseline (re-uses role profile + tags)
+      ansible.builtin.include_role:
+        name: device_config
+      vars:
+        device_config_mode: provision
+
+    - name: Validate compliance on the replacement
+      ansible.builtin.include_role:
+        name: compliance
+      vars:
+        compliance_phase: post
+
+    - name: Close out with a replacement-complete event
+      ansible.builtin.include_role:
+        name: dynatrace_events
+      vars:
+        dt_event_type: "CUSTOM_DEPLOYMENT"
+        dt_event_title: "Replacement complete + re-validated: {{ inventory_hostname }}"

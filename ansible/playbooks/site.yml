@@ -1,0 +1,17 @@
+---
+# Top-level orchestrator. Ties the device layer and the Dynatrace config layer
+# into a single reconcile. Safe to run repeatedly (idempotent / desired-state).
+#
+#   ansible-playbook playbooks/site.yml
+#
+# Order matters: observability config must exist BEFORE devices emit data/events,
+# so the auto-tag rules are ready to bind new entities on first discovery.
+
+- name: Reconcile Dynatrace observability configuration (Monaco or Terraform)
+  import_playbook: dynatrace_sync.yml
+
+- name: Ensure every device is at baseline config + tagged
+  import_playbook: device_provision.yml
+
+- name: Run compliance checks across the fleet and ship results
+  import_playbook: compliance_check.yml

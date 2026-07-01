@@ -1,0 +1,41 @@
+---
+# DAY-2 hot path: firmware/config update.
+# 1) apply change  2) re-run compliance  3) emit a change event on the device's
+# timeline so Davis can correlate the change with any telemetry impact.
+#    -> if post-update compliance fails, alert fires and we can trigger rollback.
+- name: Update device firmware/config with change correlation
+  hosts: "{{ target | mandatory }}"      # always scope updates: -l core-sw-05
+  gather_facts: false
+  serial: 1                              # one device at a time = blast-radius control
+  tasks:
+    - name: Snapshot pre-change compliance
+      ansible.builtin.include_role:
+        name: compliance
+      vars:
+        compliance_phase: pre
+
+    - name: Apply the update
+      ansible.builtin.include_role:
+        name: device_config
+      vars:
+        device_config_mode: update
+
+    - name: Emit change event (attached to this device via tags)
+      ansible.builtin.include_role:
+        name: dynatrace_events
+      vars:
+        dt_event_type: "CUSTOM_CONFIGURATION"
+        dt_event_title: "Config/firmware update on {{ inventory_hostname }}"
+
+    - name: Re-run compliance and ship result
+      ansible.builtin.include_role:
+        name: compliance
+      vars:
+        compliance_phase: post
+
+    - name: Roll back if post-update compliance regressed
+      when: compliance_post_failed | default(false)
+      ansible.builtin.include_role:
+        name: device_config
+      vars:
+        device_config_mode: rollback

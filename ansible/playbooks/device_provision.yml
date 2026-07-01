@@ -1,0 +1,15 @@
+---
+# Day-0/Day-1 AND the tail end of a refresh: bring a device to baseline config
+# and confirm it is tagged so Dynatrace auto-tag rules can bind it.
+- name: Provision / refresh devices to baseline
+  hosts: "{{ target | default('all') }}"   # -l core-sw-05 to scope
+  gather_facts: false
+  roles:
+    - role: device_config          # push baseline (idempotent)
+  post_tasks:
+    - name: Emit a provisioning change event to Dynatrace
+      ansible.builtin.include_role:
+        name: dynatrace_events
+      vars:
+        dt_event_type: "CUSTOM_DEPLOYMENT"
+        dt_event_title: "Provisioned {{ inventory_hostname }} to baseline"

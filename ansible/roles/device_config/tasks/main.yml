@@ -1,0 +1,17 @@
+---
+# STUB. Replace with your real vendor config management (ios_config, nxos_config,
+# junos_config, or a NetBox/SoT-driven render). Kept minimal so the lifecycle
+# wiring is the focus, not vendor specifics.
+- name: Render baseline config from role/site variables
+  ansible.builtin.template:
+    src: baseline.cfg.j2
+    dest: "/tmp/{{ inventory_hostname }}.cfg"
+  delegate_to: localhost
+  vars:
+    _mode: "{{ device_config_mode | default('provision') }}"
+
+- name: Push config to device (placeholder)
+  ansible.builtin.debug:
+    msg: >
+      [{{ device_config_mode | default('provision') }}] would apply rendered baseline to
+      {{ inventory_hostname }} ({{ net_role }}/{{ site }}). Wire ios_config/nxos_config here.

@@ -1,0 +1,10 @@
+configs:
+  - id: compliance-parse
+    type:
+      settings:
+        # Grail/OpenPipeline tenants: configure as an OpenPipeline processor instead.
+        schema: builtin:logmonitoring.log-dpp-rules   # VERIFY (OpenPipeline differs)
+        scope: environment
+    config:
+      name: ansible-compliance-parse
+      template: compliance-parse.json

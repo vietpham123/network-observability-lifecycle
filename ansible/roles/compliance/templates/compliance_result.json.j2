@@ -1,0 +1,15 @@
+{
+  "timestamp": "{{ ansible_date_time.iso8601 | default('%Y-%m-%dT%H:%M:%SZ' | strftime) }}",
+  "log.source": "ansible-compliance",
+  "content": "compliance {{ compliance_phase | default('audit') }} for {{ inventory_hostname }}",
+  "device.name": "{{ inventory_hostname }}",
+  "device.serial": "{{ mgmt_serial | default('unknown') }}",
+  "net_role": "{{ net_role }}",
+  "net_site": "{{ site }}",
+  "net_class": "{{ net_class }}",
+  "managed_by": "ansible-caac",
+  "compliance.phase": "{{ compliance_phase | default('audit') }}",
+  "compliance.baseline": "{{ compliance_baseline }}",
+  "compliance.controls": {{ control_results | to_json }},
+  "compliance.failed_count": {{ control_results | selectattr('result','equalto','FAIL') | list | length }}
+}

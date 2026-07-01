@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "summary": "Network device failed one or more compliance controls",
+  "__comment": "Scoped by the managed_by TAG, not by device. Any tagged device is covered the instant it is discovered - nothing to update when hardware changes. Backed by a log metric on compliance.failed_count.",
+  "queryDefinition": {
+    "type": "METRIC_KEY",
+    "metricKey": "log.ansible.compliance.failed_count",
+    "aggregation": "MAX"
+  },
+  "modelProperties": {
+    "type": "STATIC_THRESHOLD",
+    "threshold": 0,
+    "alertCondition": "ABOVE",
+    "violatingSamples": 1,
+    "samples": 1
+  },
+  "eventTemplate": {
+    "title": "Compliance drift on {dims:net_role} device",
+    "description": "A device tagged managed_by=ansible-caac failed a control. See compliance bucket.",
+    "eventType": "CUSTOM_ALERT"
+  },
+  "scope": { "filter": "tag(managed_by:ansible-caac)" }
+}
