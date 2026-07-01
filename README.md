@@ -55,11 +55,13 @@ ansible/
     dynatrace_events/   <- emit change / maintenance / decommission events via Events API v2
 dynatrace-monaco/       <- Configuration as Code, option A
 dynatrace-terraform/    <- Configuration as Code, option B (pick one)
+dynatrace-dashboards/   <- Platform dashboard as JSON (NCM/compliance report)
 .github/workflows/      <- CI: on inventory change -> reconcile device + observability config
 docs/
   ARCHITECTURE.md
   DAY2-DAY3-RUNBOOK.md
   ADDING-HARDWARE.md
+  NCM-INSIGHTS-AND-FEASIBILITY.md   <- high-level brief: tool responsibilities, DT data model, Day2/3
 ```
 
 ## The lifecycle at a glance
