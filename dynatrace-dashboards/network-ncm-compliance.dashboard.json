@@ -15,7 +15,9 @@
         "title": "Devices evaluated",
         "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | summarize devices = count() | fields devices",
         "visualization": "singleValue",
-        "visualizationSettings": {},
+        "visualizationSettings": {
+          "singleValue": { "alignment": "center", "label": { "label": "", "mode": "custom" }, "dataMapping": { "value": "devices" }, "sparkline": { "isVisible": false }, "trend": { "isVisible": false } }
+        },
         "querySettings": {}
       },
       "kpi_compliance_pct": {
@@ -25,9 +27,13 @@
         "visualization": "singleValue",
         "visualizationSettings": {
           "singleValue": {
-            "showTrend": false,
-            "showSparkline": false
+            "alignment": "center",
+            "label": { "label": "", "mode": "custom" },
+            "dataMapping": { "value": "compliancePercent" },
+            "sparkline": { "isVisible": false },
+            "trend": { "isVisible": false }
           },
+          "unitsOverrides": [ { "identifier": "compliancePercent", "unitCategory": "percentage", "baseUnit": "percent", "displayUnit": "percent", "decimals": 1 } ],
           "thresholds": [
             {
               "id": "t1",
@@ -48,7 +54,9 @@
         "title": "Devices in drift",
         "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | summarize inDrift = countIf(toLong(compliance.failed_count) > 0) | fields inDrift",
         "visualization": "singleValue",
-        "visualizationSettings": {},
+        "visualizationSettings": {
+          "singleValue": { "alignment": "center", "label": { "label": "", "mode": "custom" }, "dataMapping": { "value": "inDrift" }, "sparkline": { "isVisible": false }, "trend": { "isVisible": false } }
+        },
         "querySettings": {}
       },
       "kpi_failures": {
@@ -56,7 +64,9 @@
         "title": "Open control failures",
         "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | summarize controlFailures = sum(toLong(compliance.failed_count)) | fields controlFailures",
         "visualization": "singleValue",
-        "visualizationSettings": {},
+        "visualizationSettings": {
+          "singleValue": { "alignment": "center", "label": { "label": "", "mode": "custom" }, "dataMapping": { "value": "controlFailures" }, "sparkline": { "isVisible": false }, "trend": { "isVisible": false } }
+        },
         "querySettings": {}
       },
       "status_table": {
@@ -77,8 +87,8 @@
       },
       "control_pivot": {
         "type": "data",
-        "title": "Compliance matrix — controls per device (✓ pass / ✗ fail)",
-        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | expand ctrl = compliance.controls | parse ctrl, \"JSON:c\" | fieldsAdd ck = c[control_key], res = if(c[result] == \"PASS\", \"✓\", else: \"✗\") | summarize `A.8.20 no-telnet` = takeMax(if(ck == \"no_telnet\", res)), `A.8.5 ssh-v2` = takeMax(if(ck == \"ssh_v2_only\", res)), `A.8.9 snmp-secure` = takeMax(if(ck == \"snmp_not_default_community\", res)), `A.8.15 logging` = takeMax(if(ck == \"logging_host_set\", res)), `A.8.17 ntp` = takeMax(if(ck == \"ntp_configured\", res)), `A.8.24 bgp-md5` = takeMax(if(ck == \"bgp_md5_auth\", res)), `A.8.22 default-deny` = takeMax(if(ck == \"default_deny_ruleset\", res)), by: {device = device.name, net_role, net_site} | sort net_role asc, device asc",
+        "title": "Compliance matrix — all 20 controls per device (✓ pass / ✗ fail / — n/a for role)",
+        "query": "fetch logs | filter log.source == \"ansible-compliance\" | dedup {device.name}, sort: {timestamp desc} | expand ctrl = compliance.controls | parse ctrl, \"JSON:c\" | fieldsAdd ck = c[control_key], res = if(c[result] == \"PASS\", \"✓\", else: \"✗\") | summarize `A.8.20 no-telnet` = takeMax(if(ck == \"no_telnet\", res, else: \"—\")), `A.8.20 vty-acl` = takeMax(if(ck == \"vty_access_class\", res, else: \"—\")), `A.8.20 no-http` = takeMax(if(ck == \"no_http_server\", res, else: \"—\")), `A.8.20 port-sec` = takeMax(if(ck == \"port_security\", res, else: \"—\")), `A.8.22 no-srcroute` = takeMax(if(ck == \"no_source_route\", res, else: \"—\")), `A.8.22 deny-all` = takeMax(if(ck == \"default_deny_ruleset\", res, else: \"—\")), `A.8.5 ssh-v2` = takeMax(if(ck == \"ssh_v2_only\", res, else: \"—\")), `A.8.5 enable-secret` = takeMax(if(ck == \"enable_secret\", res, else: \"—\")), `A.8.2 aaa` = takeMax(if(ck == \"aaa_enabled\", res, else: \"—\")), `A.8.2 exec-timeout` = takeMax(if(ck == \"exec_timeout\", res, else: \"—\")), `A.5.15 banner` = takeMax(if(ck == \"login_banner\", res, else: \"—\")), `A.8.24 pw-encrypt` = takeMax(if(ck == \"password_encryption\", res, else: \"—\")), `A.8.24 bgp-md5` = takeMax(if(ck == \"bgp_md5_auth\", res, else: \"—\")), `A.8.24 ntp-auth` = takeMax(if(ck == \"ntp_auth\", res, else: \"—\")), `A.8.9 snmpv3` = takeMax(if(ck == \"snmp_not_default_community\", res, else: \"—\")), `A.8.13 archive` = takeMax(if(ck == \"config_archive\", res, else: \"—\")), `A.8.15 logging` = takeMax(if(ck == \"logging_host_set\", res, else: \"—\")), `A.8.16 log-sev` = takeMax(if(ck == \"logging_trap_severity\", res, else: \"—\")), `A.8.17 ntp` = takeMax(if(ck == \"ntp_configured\", res, else: \"—\")), `A.8.23 web-filter` = takeMax(if(ck == \"web_filtering\", res, else: \"—\")), by: {device = device.name, net_role, net_site} | sort net_role asc, device asc",
         "visualization": "table",
         "visualizationSettings": {
           "table": { "rowDensity": "condensed", "columnWidthStrategy": "auto", "linewrapEnabled": false }
