@@ -16,3 +16,6 @@ artifacts/
 
 # local claude settings
 .claude/settings.local.json
+
+# local env (real secrets)
+.env
