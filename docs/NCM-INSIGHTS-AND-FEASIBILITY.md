@@ -140,6 +140,29 @@ Why a cautious network team can trust this:
 
 ## 7. What was proven live (evidence) — and the honest prerequisites
 
+### Test environment this was validated against
+
+This was validated the way a network team would run a **proof in their own test/dev environment** —
+a small, representative fleet against a real observability backend, not production hardware:
+
+| Component | What was used |
+|-----------|---------------|
+| **Observability backend** | A **live Dynatrace Gen3 (Grail) tenant** — real Log Ingest, real DQL, real dashboards. Not a mock. |
+| **Network fleet** | A **6-device topology across 3 roles and 2 sites** — 3 core switches (`chi-dc1`), 2 edge routers (`chi-dc1`, `mke-dc2`), 1 perimeter firewall. |
+| **Device representation** | Each device was driven by its **running-config fixture** (Cisco-IOS-style config), which the compliance role parses — the *same code path* a real or virtualized device feeds. The device layer was config-fixture-driven, **not** live network-OS SSH sessions. |
+| **Control node** | Ansible-core 2.21 (Python venv) on macOS; Terraform 1.14 with the `dynatrace-oss/dynatrace` provider; `dtctl` 0.22 (SSO/OAuth) for DQL + dashboard deploy. |
+
+**Why this is representative — and how a virtual lab plugs in unchanged.** The compliance engine
+evaluates **running-config text**; everything downstream (structured evidence → Log Ingest → Grail →
+dashboard) is identical regardless of where that config came from — a physical device, a
+**virtualized network OS**, or a fixture. So the exact validation an org would run in test/dev is a
+drop-in: stand up a **containerlab / vrnetlab topology** (e.g. Arista cEOS, Nokia SR Linux, Cisco
+IOL — the same virtual devices used in most network test/dev labs), point the Ansible inventory at
+it, and swap the config-gather step from the fixture to `ios_facts` / `nxos_facts`. Nothing in the
+Dynatrace pipeline or the dashboard changes. This build exercised that entire pipeline end-to-end
+with representative fleet data; the remaining adoption step is sourcing the config from live (or
+virtual) devices instead of fixtures.
+
 **Verified in a live Dynatrace tenant during this build:**
 
 - Terraform deployed the Dynatrace config — **6 objects applied and confirmed via API**: 3 role
