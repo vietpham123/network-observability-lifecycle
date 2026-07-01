@@ -22,7 +22,7 @@ resource "dynatrace_metric_events" "compliance_drift" {
     alert_condition    = "ABOVE"
     alert_on_no_data   = false
     dealerting_samples = 5
-    violating_samples  = 1
-    samples            = 1
+    violating_samples  = 3
+    samples            = 5
   }
 }
